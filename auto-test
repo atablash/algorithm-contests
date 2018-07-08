@@ -1,0 +1,138 @@
+#!/usr/bin/python
+
+
+import argparse
+from os import path
+from subprocess import Popen, PIPE
+from sys import stdout
+import time
+
+from os import devnull
+
+from threading import Thread
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('command1')
+parser.add_argument('command2')
+parser.add_argument('testgen')
+parser.add_argument('--from', dest='start_from', type=int, default=0)
+args = parser.parse_args()
+
+
+
+
+if path.exists(args.command1):
+	command1 = './' + args.command1
+else:
+	command1 = args.command1
+
+
+
+if path.exists(args.command2):
+	command2 = './' + args.command2
+else:
+	command2 = args.command2
+
+
+
+
+if path.exists(args.testgen):
+	testgen = './' + args.testgen
+else:
+	testgen = args.testgen
+
+
+
+
+
+
+
+
+
+def compare_lines(line_a, line_b):
+	aa = line_a.split()
+	bb = line_b.split()
+
+	if len(aa) != len(bb):
+		stdout.write('(number of tokens: ' + str(len(aa)) + ' vs ' + str(len(bb)) + ')->')
+		return False
+
+	i = 0
+	for a,b in zip(aa,bb):
+		i += 1
+		if a != b:
+			stdout.write('(token #' + str(i) + ': ' + a + ' should be ' + b + ')->')
+			return False
+
+	return True
+
+
+
+
+
+
+
+itest = args.start_from - 1
+
+err = False
+
+while not err:
+	itest += 1
+
+	stdout.write('Test #' + str(itest) + '... ')
+	stdout.flush()
+
+	t0 = time.time()
+
+
+	process_testgen = Popen([testgen, str(itest)], stdout=PIPE)
+
+	process_command1 = Popen(command1, stdout=PIPE, stdin=PIPE, stderr=open(devnull, 'w'))
+	process_command2 = Popen(command2, stdout=PIPE, stdin=PIPE, stderr=open(devnull, 'w'))
+
+
+	def read_input():
+		for line in process_testgen.stdout:
+			process_command1.stdin.write(line + "\n")
+			process_command2.stdin.write(line + "\n")
+
+		process_command1.stdin.close()
+		process_command2.stdin.close()
+
+
+
+	def read_output():
+		global err
+		iline = 0
+		for line1 in process_command1.stdout:
+			line2 = process_command2.stdout.next()
+
+			iline += 1
+
+			if err:
+				continue
+
+			r = compare_lines(line1, line2)
+			if not r:
+				stdout.write('(diff on line ' + str(iline) + ') ')
+				err = True
+
+
+	p1 = Thread(target=read_input)
+	p1.start()
+
+	p2 = Thread(target=read_output)
+	p2.start()
+
+	p1.join()
+	p2.join()
+
+
+	process_testgen.wait()
+	process_command1.wait()
+	process_command2.wait()
+
+	time_diff = time.time() - t0
+
+	print(str(time_diff) + 's')

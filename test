@@ -1,0 +1,135 @@
+#!/usr/bin/python
+
+
+import argparse
+from os import listdir, path
+from subprocess import Popen, PIPE
+from sys import stdout
+import time
+from os import devnull
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('command', default='a.out')
+parser.add_argument('tests', help='path to tests or directory with tests', default='a.out', nargs='+')
+args = parser.parse_args()
+
+
+
+
+if path.exists(args.command):
+	command = './' + args.command
+else:
+	command = args.command
+
+
+
+
+
+
+import re
+
+def natural_sorted(l): 
+    convert = lambda text: int(text) if text.isdigit() else text.lower() 
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(l, key = alphanum_key)
+
+
+
+
+
+
+tests = []
+
+for t in args.tests:
+	if path.isdir(t):
+		for p in natural_sorted(listdir(t)):
+			tests.append(path.join(t, p))
+	elif path.exists(t):
+		tests.append(t)
+	else:
+		print(t + ' does not exist')
+		exit()
+
+
+
+
+def compare_lines(line_a, line_b):
+	aa = line_a.split()
+	bb = line_b.split()
+
+	if len(aa) != len(bb):
+		stdout.write('(number of tokens: ' + str(len(aa)) + ' vs ' + str(len(bb)) + ')->')
+		return False
+
+	i = 0
+	for a,b in zip(aa,bb):
+		i += 1
+		if a != b:
+			stdout.write('(token #' + str(i) + ': ' + a + ' should be ' + b + ')->')
+			return False
+
+	return True
+
+
+
+
+for test in tests:
+	good = False
+
+	if test[-3:] == ".in":
+		good = True
+
+	if path.basename(test)[0:2] == "in":
+		good = True
+
+	if not good:
+		continue
+
+
+	stdout.write(test + '... ')
+	stdout.flush()
+
+	t0 = time.time()
+
+	process = Popen(command, stdout=PIPE, stdin=open(test,'r'), stderr=open(devnull, 'w'), shell=True)
+
+	out_file = test
+
+	if out_file[-3:] == ".in":
+		out_file = out_file[:-3] + ".out"
+
+	if path.basename(out_file)[0:2] == "in":
+		basename = 'out' + path.basename(out_file)[2:]
+		out_file = path.join(path.dirname(out_file), basename)
+
+	out_file = out_file.replace('/in/', '/out/')
+
+
+	if not path.exists(out_file):
+		print(out_file + ' does not exist')
+		exit(1)
+
+	with open(out_file, 'r') as f: 
+		iline = 0
+		err = False
+		for line in process.stdout:
+			iline += 1
+			
+			if err:
+				continue
+
+			r = compare_lines(line, f.next())
+			if not r:
+				stdout.write('(diff on line ' + str(iline) + ') ')
+				stdout.flush()
+				err = True
+		
+	process.wait()
+
+	time_diff = time.time() - t0
+
+	print(str(time_diff) + 's')
+
+	if err:
+		break
