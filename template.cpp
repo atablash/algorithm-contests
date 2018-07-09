@@ -3,11 +3,15 @@
 #include "template.hpp"
 
 
+struct Test_Case {
 
 
-void test_case(int) {
-	
-}
+	void solve() {
+		// cout << "Case #" << icase+1 << ": ";
+	}
+
+	int icase = 0;
+}; // struct Test_Case
 
 
 
@@ -16,7 +20,9 @@ int main() {
 		int num_test_cases = ri();
 
 		for(int i=0; i < num_test_cases; ++i) {
-			test_case(i);
+			Test_Case tc;
+			tc.icase = i;
+			tc.solve();
 		}
 	#else
 		test_case(0);
