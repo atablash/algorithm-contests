@@ -127,7 +127,19 @@ In_Buffer& operator>>( In_Buffer& buff, int32_t& r) { r = read_signed<int32_t>(b
 In_Buffer& operator>>( In_Buffer& buff, int64_t& r) { r = read_signed<int64_t>(buff); return buff; }
 In_Buffer& operator>>( In_Buffer& buff, long long& r) { r = read_signed<long long>(buff); return buff; }
 
+In_Buffer& operator>>( In_Buffer& buff, string& r) {
+	r.clear();
 
+	char c = buff.get_unchecked();
+	while(c <= ' ') c = buff.get_unchecked();
+
+	do {
+		r.push_back( c );
+		c = buff.get_unchecked();
+	} while(c > ' ');
+
+	return buff;
+}
 
 
 
@@ -249,7 +261,7 @@ Out_Buffer& operator<<( Out_Buffer& buff, const int32_t& r) { write_signed<int32
 Out_Buffer& operator<<( Out_Buffer& buff, const int64_t& r) { write_signed<int64_t>(buff, r); return buff; }
 
 Out_Buffer& operator<<( Out_Buffer& buff, const char* cstr) { auto len = strlen(cstr); buff.prepare(len); buff.put_unchecked(cstr, len); return buff; }
-
+Out_Buffer& operator<<( Out_Buffer& buff, const string& str) { buff.prepare( str.size() ); buff.put_unchecked(str.data(), str.size()); return buff; }
 
 
 
