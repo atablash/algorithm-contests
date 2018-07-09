@@ -10,7 +10,7 @@ struct Test_Case {
 		// cout << "Case #" << icase+1 << ": ";
 	}
 
-	int icase = 0;
+	int icase = -1;
 }; // struct Test_Case
 
 
@@ -25,7 +25,9 @@ int main() {
 			tc.solve();
 		}
 	#else
-		test_case(0);
+		Test_Case tc;
+		tc.icase = -1;
+		tc.solve();
 	#endif
 
 	return 0;
