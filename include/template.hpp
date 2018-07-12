@@ -5,7 +5,7 @@
 using namespace std;
 
 
-#ifdef USE_FAST_IO
+#if USE_FAST_IO
 	#include "fast-io.hpp"
 	#define cin fast_cin
 	#define cout fast_cout
@@ -21,3 +21,5 @@ using namespace std;
 
 #include "abbrevs.hpp"
 
+namespace salgo {};
+using namespace salgo;

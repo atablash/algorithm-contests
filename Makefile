@@ -1,3 +1,3 @@
 %: %.cpp
-	g++ -Wall -Wextra -Wshadow -Wno-unused-result -std=c++17 -O3 -s -lm -g -ggdb $^ -o $@
+	c++ -Wall -Wextra -Wshadow -Wno-unused-result -Wno-unused-value -std=c++17 -O4 -s -g -ggdb $^ -lm -lglog -o $@
 

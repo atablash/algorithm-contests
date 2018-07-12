@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+/a
+/a.out
+/a.cpp
+/temp
+/temp.cpp
+/template

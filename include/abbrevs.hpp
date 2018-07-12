@@ -21,8 +21,9 @@ auto rstr() {string s; cin >> s; return s; }
 
 
 
-#define min(a,b) ((a)<(b) ? (a) : (b))
-#define max(a,b) ((b)<(a) ? (a) : (b))
+#define MIN(a,b) ((a)<(b) ? (a) : (b))
+#define MAX(a,b) ((b)<(a) ? (a) : (b))
 
-#define remin(a,b) ((a) = min(a,b))
-#define remax(a,b) ((a) = max(a,b))
+#define REMIN(a,b) ((a) = min(a,b))
+#define REMAX(a,b) ((a) = max(a,b))
+
