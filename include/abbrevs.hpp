@@ -1,23 +1,26 @@
 #pragma once
 
-#define uint unsigned int
+#define UI unsigned int
 
-#define ll long long
-#define ull unsigned long long
+#define LL long long
+#define ULL unsigned long long
 
-
-auto ri()   { int r; cin >> r; return r; }
-auto rui()  { uint r; cin >> r; return r; }
-
-auto rll()  { ll r;  cin >> r; return r; }
-auto rull() { ull r; cin >> r; return r; }
-
-auto rstr() {string s; cin >> s; return s; }
+#define PII pair<int,int>
 
 
-#define FOR(i,n) for(int i=0; i<int(n); ++i)
+#define RI ri()
+#define RUI rui()
+
+#define RLL rll()
+#define RULL rull()
+
+#define RSTR rstr()
+
+
+
+#define FOR(i,n) for(int i=0, _end=(n); i<_end; ++i)
 #define FO(i,a,b) for(int i=(a); i<int(b); ++i)
-#define OF(i,a,b) for(int i=(a)-1; i>=int(b); --i)
+#define OF(i,a,b) for(int i=(b)-1; i>=int(a); --i)
 
 
 
@@ -26,4 +29,14 @@ auto rstr() {string s; cin >> s; return s; }
 
 #define REMIN(a,b) ((a) = min(a,b))
 #define REMAX(a,b) ((a) = max(a,b))
+
+#define ALL(c) (c).begin(),(c).end()
+
+#define SQR(x) ((x)*(x))
+
+
+
+bool is_pow(int x) {
+	return (x&(x-1)) == 0;
+}
 

@@ -112,6 +112,12 @@ bool include(string original_filename) {
 		output_line("#define DCHECK_EQ(...) if(0) cerr");
 		output_line("#define CHECK_GE(...) if(0) cerr");
 		output_line("#define DCHECK_GE(...) if(0) cerr");
+		output_line("#define CHECK_GT(...) if(0) cerr");
+		output_line("#define DCHECK_GT(...) if(0) cerr");
+		output_line("#define CHECK_LT(...) if(0) cerr");
+		output_line("#define DCHECK_LT(...) if(0) cerr");
+		output_line("#define CHECK_LE(...) if(0) cerr");
+		output_line("#define DCHECK_LE(...) if(0) cerr");
 		output_line("#define CHECK(...) if(0) cerr");
 		output_line("#define DCHECK(...) if(0) cerr");
 		output_line("#define LOG(...) if(0) cerr");

@@ -1,6 +1,40 @@
+#pragma once
 
 
 
+
+//
+// simple
+struct G {
+	struct V {
+		struct Out {
+			int v = -1; // dest vertex
+		};
+		vector<Out> outs;
+	};
+	vector<V> vs;
+
+	void add_edge(int a, int b) {
+		vs[a].outs.push_back( {b} );
+		vs[b].outs.push_back( {a} );
+	}
+
+	void read() {
+		vs.resize( RI );
+		FOR(i,RI) add_edge(RI-1, RI-1);
+	}
+};
+
+
+
+
+
+
+
+
+
+//
+// removable edges
 struct G {
 	struct V {
 		struct Out {

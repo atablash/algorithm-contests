@@ -2,18 +2,24 @@
 #define USE_FAST_IO          false
 #include "include/template.hpp"
 
-//#include <salgo/graph.hpp>
+//#include <salgo/graph.hpp> // c++17
 //#include <salgo/binomial.hpp>
+//#include <salgo/modulo.hpp>
+//#include <salgo/common.hpp>
+
 
 struct Test_Case {
 
-	int n, m, k;
+	//int n = RI;
+	//int m = RI;
+	//int k = RI;
+
 	vector<int> in;
 
 	void solve() {
 		// cout << "Case #" << icase+1 << ": ";
-		in.resize( ri() );
-		FOR(i,n) cin >> in[i];
+		in.resize( RI );
+		FOR(i,n) in[i] = RI;
 	}
 
 	int icase = -1;
@@ -22,7 +28,7 @@ struct Test_Case {
 
 
 int main() {
-	int num_cases = READ_NUM_TEST_CASES ? ri() : 1;
+	int num_cases = READ_NUM_TEST_CASES ? RI : 1;
 	
 	FOR(i, num_cases) {
 		Test_Case tc;

@@ -48,9 +48,10 @@ public:
 
 public:
 	void prepare(int num_chars) {
-		int remaining = buffer_size - pos;
+		auto remaining = buffer_size - pos;
 		if(remaining >= num_chars) return;
 
+		assert(remaining >= 0);
 		memcpy(buff, buff+pos, remaining);
 
 		FREAD(buff+remaining, 1, pos, stream);
@@ -100,8 +101,7 @@ INT read_signed(In_Buffer& buff) {
 	for(;;)
 	{
 		if(c < '0') return minus ? -r : r;
-		c -= '0';
-		r = r*10 + c;
+		r = r*10 + (c-'0');
 		c = buff.get_unchecked();
 	}
 }
@@ -117,15 +117,11 @@ In_Buffer& operator>>( In_Buffer& buff, char& c) {
 
 
 
-In_Buffer& operator>>( In_Buffer& buff, uint16_t& r) { r = read_unsigned<uint16_t>(buff); return buff; }
-In_Buffer& operator>>( In_Buffer& buff, uint32_t& r) { r = read_unsigned<uint32_t>(buff); return buff; }
-In_Buffer& operator>>( In_Buffer& buff, uint64_t& r) { r = read_unsigned<uint64_t>(buff); return buff; }
-In_Buffer& operator>>( In_Buffer& buff, unsigned long long& r) { r = read_unsigned<unsigned long long>(buff); return buff; }
+In_Buffer& operator>>( In_Buffer& buff, UI& r) { r = read_unsigned<UI>(buff); return buff; }
+In_Buffer& operator>>( In_Buffer& buff, ULL& r) { r = read_unsigned<ULL>(buff); return buff; }
 
-In_Buffer& operator>>( In_Buffer& buff, int16_t& r) { r = read_signed<int16_t>(buff); return buff; }
-In_Buffer& operator>>( In_Buffer& buff, int32_t& r) { r = read_signed<int32_t>(buff); return buff; }
-In_Buffer& operator>>( In_Buffer& buff, int64_t& r) { r = read_signed<int64_t>(buff); return buff; }
-In_Buffer& operator>>( In_Buffer& buff, long long& r) { r = read_signed<long long>(buff); return buff; }
+In_Buffer& operator>>( In_Buffer& buff, int& r) { r = read_signed<int>(buff); return buff; }
+In_Buffer& operator>>( In_Buffer& buff, LL& r) { r = read_signed<LL>(buff); return buff; }
 
 In_Buffer& operator>>( In_Buffer& buff, string& r) {
 	r.clear();
@@ -140,6 +136,9 @@ In_Buffer& operator>>( In_Buffer& buff, string& r) {
 
 	return buff;
 }
+
+
+
 
 
 
@@ -252,13 +251,11 @@ Out_Buffer& operator<<( Out_Buffer& buff, const char& c) {
 	return buff;
 }
 
-Out_Buffer& operator<<( Out_Buffer& buff, const uint16_t& r) { write_unsigned<uint16_t>(buff, r); return buff; }
-Out_Buffer& operator<<( Out_Buffer& buff, const uint32_t& r) { write_unsigned<uint32_t>(buff, r); return buff; }
-Out_Buffer& operator<<( Out_Buffer& buff, const uint64_t& r) { write_unsigned<uint64_t>(buff, r); return buff; }
+Out_Buffer& operator<<( Out_Buffer& buff, const UI& r) { write_unsigned<UI>(buff, r); return buff; }
+Out_Buffer& operator<<( Out_Buffer& buff, const ULL& r) { write_unsigned<ULL>(buff, r); return buff; }
 
-Out_Buffer& operator<<( Out_Buffer& buff, const int16_t& r) { write_signed<int16_t>(buff, r); return buff; }
-Out_Buffer& operator<<( Out_Buffer& buff, const int32_t& r) { write_signed<int32_t>(buff, r); return buff; }
-Out_Buffer& operator<<( Out_Buffer& buff, const int64_t& r) { write_signed<int64_t>(buff, r); return buff; }
+Out_Buffer& operator<<( Out_Buffer& buff, const int& r) { write_signed<int>(buff, r); return buff; }
+Out_Buffer& operator<<( Out_Buffer& buff, const LL& r) { write_signed<LL>(buff, r); return buff; }
 
 Out_Buffer& operator<<( Out_Buffer& buff, const char* cstr) { auto len = strlen(cstr); buff.prepare(len); buff.put_unchecked(cstr, len); return buff; }
 Out_Buffer& operator<<( Out_Buffer& buff, const string& str) { buff.prepare( str.size() ); buff.put_unchecked(str.data(), str.size()); return buff; }

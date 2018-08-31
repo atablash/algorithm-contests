@@ -105,8 +105,22 @@ while not err:
 	def read_output():
 		global err
 		iline = 0
-		for line1 in process_command1.stdout:
-			line2 = process_command2.stdout.next()
+		while True:
+			line1 = process_command1.stdout.readline()
+			line2 = process_command2.stdout.readline()
+
+			if not line1 and not line2:
+				break
+
+			if not line1:
+				stdout.write('(command 1: not enough lines) ')
+				err = True
+				break
+
+			if not line2:
+				stdout.write('command 2: not enough lines) ')
+				err = True
+				break
 
 			iline += 1
 
@@ -117,6 +131,7 @@ while not err:
 			if not r:
 				stdout.write('(diff on line ' + str(iline) + ') ')
 				err = True
+
 
 
 	p1 = Thread(target=read_input)
