@@ -1,4 +1,4 @@
-std = c++14
+std = c++11
 
 ifeq ($(debug),1)
 	dbg_flags = -g -ggdb
