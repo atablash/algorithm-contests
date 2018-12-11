@@ -11,7 +11,7 @@ from os import devnull
 
 parser = argparse.ArgumentParser()
 parser.add_argument('command', default='a.out')
-parser.add_argument('tests', help='path to tests or directory with tests', default='a.out', nargs='+')
+parser.add_argument('tests', help='path to tests or directory with tests', default='.', nargs='*')
 args = parser.parse_args()
 
 
@@ -41,16 +41,19 @@ def natural_sorted(l):
 
 tests = []
 
-for t in args.tests:
+def append_tests(t):
 	if path.isdir(t):
 		for p in natural_sorted(listdir(t)):
-			tests.append(path.join(t, p))
+			append_tests(path.join(t, p))
 	elif path.exists(t):
 		tests.append(t)
 	else:
 		print(t + ' does not exist')
 		exit()
 
+
+for test in args.tests:
+	append_tests(test)
 
 
 
@@ -83,6 +86,9 @@ for test in tests:
 	if path.basename(test)[0:2] == "in":
 		good = True
 
+	if '.in.' in path.basename(test):
+		good = True
+
 	if not good:
 		continue
 
@@ -105,6 +111,7 @@ for test in tests:
 
 	out_file = out_file.replace('/in/', '/out/')
 
+	out_file = out_file.replace('.in.', '.out.')
 
 	if not path.exists(out_file):
 		print(out_file + ' does not exist')
