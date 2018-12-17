@@ -88,8 +88,8 @@ while not err:
 
 	process_testgen = Popen([testgen, str(itest)], stdout=PIPE)
 
-	process_command1 = Popen(command1, stdout=PIPE, stdin=PIPE, stderr=open(devnull, 'w'))
-	process_command2 = Popen(command2, stdout=PIPE, stdin=PIPE, stderr=open(devnull, 'w'))
+	process_command1 = Popen(command1, stdout=PIPE, stdin=PIPE, stderr=open(devnull, 'w'), shell=True)
+	process_command2 = Popen(command2, stdout=PIPE, stdin=PIPE, stderr=open(devnull, 'w'), shell=True)
 
 
 	def read_input():
@@ -147,6 +147,14 @@ while not err:
 	process_testgen.wait()
 	process_command1.wait()
 	process_command2.wait()
+
+	if process_command1.returncode != 0:
+		stdout.write('(command 1: non-zero exit code: ' + str(process_command1.returncode) + ') ')
+		err = True
+
+	if process_command2.returncode != 0:
+		stdout.write('(command 2: non-zero exit code: ' + str(process_command2.returncode) + ') ')
+		err = True
 
 	time_diff = time.time() - t0
 

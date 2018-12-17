@@ -7,12 +7,20 @@ from subprocess import Popen, PIPE
 from sys import stdout
 import time
 from os import devnull
+from decimal import Decimal
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('command', default='a.out')
 parser.add_argument('tests', help='path to tests or directory with tests', default='.', nargs='*')
+parser.add_argument('--generate', dest='generate', action='store_true', help="generate output if there's no OUT file")
+parser.add_argument('--tolerance', default='0', help='relative or absolute error tolerance')
 args = parser.parse_args()
+
+
+
+
+args.tolerance = Decimal(args.tolerance)
 
 
 
@@ -45,7 +53,7 @@ def append_tests(t):
 	if path.isdir(t):
 		for p in natural_sorted(listdir(t)):
 			append_tests(path.join(t, p))
-	elif path.exists(t):
+	elif path.exists(t) or args.generate:
 		tests.append(t)
 	else:
 		print(t + ' does not exist')
@@ -57,7 +65,14 @@ for test in args.tests:
 
 
 
+max_error = Decimal(0)
+
+compare_lines_output = ''
+
 def compare_lines(line_a, line_b):
+	global compare_lines_output
+	compare_lines_output = ''
+
 	aa = line_a.split()
 	bb = line_b.split()
 
@@ -69,12 +84,32 @@ def compare_lines(line_a, line_b):
 	for a,b in zip(aa,bb):
 		i += 1
 		if a != b:
-			stdout.write('(token #' + str(i) + ': ' + a + ' should be ' + b + ')->')
-			return False
+
+			if args.tolerance != 0 and a != b:
+				given = Decimal(a)
+				expected = Decimal(b)
+				error = (expected - given) / max(expected, 1)
+
+				global max_error
+				max_error = max(max_error, error)
+
+				if error < args.tolerance:
+					if error != 0:
+						compare_lines_output = 'diff: ' + str(error)
+				else:
+					compare_lines_output = 'ERROR: ' + str(error) + ' bigger than tolerance ' + str(args.tolerance)
+					return False
+			else:
+				compare_lines_output = 'token #' + str(i) + ': ' + a + ' should be ' + b
+				return False
 
 	return True
 
 
+
+num_tests = 0
+time_sum = 0
+time_max = 0
 
 
 for test in tests:
@@ -96,15 +131,15 @@ for test in tests:
 	stdout.write(test + '... ')
 	stdout.flush()
 
-	t0 = time.time()
 
-	process = Popen(command, stdout=PIPE, stdin=open(test,'r'), stderr=open(devnull, 'w'), shell=True)
 
+
+	# get output file name
 	out_file = test
 
 	if out_file[-3:] == ".in":
 		out_file = out_file[:-3] + ".out"
-
+	
 	if path.basename(out_file)[0:2] == "in":
 		basename = 'out' + path.basename(out_file)[2:]
 		out_file = path.join(path.dirname(out_file), basename)
@@ -113,30 +148,85 @@ for test in tests:
 
 	out_file = out_file.replace('.in.', '.out.')
 
-	if not path.exists(out_file):
+
+
+	if not args.generate and not path.exists(out_file):
 		print(out_file + ' does not exist')
 		exit(1)
 
-	with open(out_file, 'r') as f: 
-		iline = 0
-		err = False
-		for line in process.stdout:
-			iline += 1
-			
-			if err:
-				continue
+	if args.generate and path.exists(out_file):
+		print(out_file + ' already exists')
+		exit(1)
 
-			r = compare_lines(line, f.next())
-			if not r:
-				stdout.write('(diff on line ' + str(iline) + ') ')
-				stdout.flush()
-				err = True
+
+
+
+
+
+
+
+	t0 = time.time()
+
+	where_to_stdout = PIPE
+	if args.generate:
+		where_to_stdout = open(out_file, 'w')
+
+	process = Popen(command, stdout=where_to_stdout, stdin=open(test,'r'), stderr=open(devnull, 'w'), shell=True)
+
+	
+
+	err = False
+
+	if not args.generate:
+		with open(out_file, 'r') as f: 
+			iline = 0
+			for line in process.stdout:
+				iline += 1
+				
+				if err:
+					continue
+
+				r = compare_lines(line, f.next())
+				if not r:
+					stdout.write('(diff on line ' + str(iline) + ') ')
+					stdout.flush()
+					err = True
+
+				if compare_lines_output != '':
+					stdout.write('(' + compare_lines_output + ') ')
+					stdout.flush()
+
+			try:
+				while True:
+					next_line = f.next()
+					if not compare_lines('', next_line):
+						stdout.write('(missing output, expected: ' + next_line + ')')
+						stdout.flush()
+						err = True
+			except:
+				pass
 		
 	process.wait()
 
 	time_diff = time.time() - t0
 
-	print(str(time_diff) + 's')
+	print("%.3fs" % time_diff)
+
+	num_tests += 1
+	time_sum += time_diff
+	time_max = max(time_max, time_diff)
 
 	if err:
 		break
+
+print('')
+print(' - total tests passed:  ' + str(num_tests))
+
+if num_tests > 0:
+	print(' - average test time:   %.3fs' % (time_sum / num_tests))
+	print(' - max test time:       %.3fs' % time_max)
+
+
+if args.tolerance != 0:
+	print(' - max error: ' + str(max_error) + ' < tolerance ' + str(args.tolerance))
+	

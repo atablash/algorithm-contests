@@ -51,10 +51,12 @@ public:
 		auto remaining = buffer_size - pos;
 		if(remaining >= num_chars) return;
 
-		assert(remaining >= 0);
+		assert(remaining >= 0); // prevent compiler warning
 		memcpy(buff, buff+pos, remaining);
 
-		FREAD(buff+remaining, 1, pos, stream);
+		int read = FREAD(buff+remaining, 1, pos, stream);
+		int block_end = remaining + read;
+		memset(buff + block_end, 0, buffer_size - block_end);
 		pos = 0;
 	}
 

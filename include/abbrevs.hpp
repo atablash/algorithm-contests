@@ -18,7 +18,7 @@
 
 
 
-#define FOR(i,n) for(int i=0, _end=(n); i<_end; ++i)
+#define FOR(i,n) for(int i=0; i<int(n); ++i)
 #define FO(i,a,b) for(int i=(a); i<int(b); ++i)
 #define OF(i,a,b) for(int i=(b)-1; i>=int(a); --i)
 
