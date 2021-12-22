@@ -1,12 +1,15 @@
-std = c++11
+std = c++17
 
-ifeq ($(debug),1)
-	dbg_flags = -g -ggdb
+# debug by default
+ifeq ($(release),1)
+	dbg_flags = -O3
+else ifeq ($(release), 2)
+	dbg_flags = -O3 -pg
 else
-	dbg_flags = -O4 -s -g
+	dbg_flags = -g -ggdb -rdynamic -D_GLIBCXX_CONCEPT_CHECKS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -DLOCAL
 endif
 
 
 %: %.cpp
-	c++ -Wall -Wextra -Wshadow -Wno-unused-result -Wno-unused-value -std=$(std) $(dbg_flags) $^ -lm -lglog -o $@
+	g++ -Wall -Wextra -Wshadow -Wfatal-errors -std=$(std) $(dbg_flags) $^ -lm -o $@
 

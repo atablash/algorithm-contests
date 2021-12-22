@@ -2,68 +2,49 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+const int PRIMES_LIMIT = 1e7;
 
+VI lpd; // least prime divisor
 
-// returns all primes less than limit
-// 4s, 512MB for limit == 1e9
-vector<int> get_primes(int limit) {
-	vector<bool> p(limit/2);
+VI get_primes(int limit) {
+  VI primes;
+  lpd.clear();
+  lpd.resize(limit);
 
-	for(int i=3; i*i<limit; i += 2) {
-		if(p[i/2]) continue;
+  FOR(i, 2, limit) {
+    if (!lpd[i]) {
+      primes.push_back(i);
+      lpd[i] = i;
+    }
+    for (auto &p : primes) {
+      if (p > lpd[i] || i * p >= limit)
+        break;
+      lpd[i * p] = p;
+    }
+  }
 
-		for(int c=i*i; c < limit; c += 2*i) p[c/2] = true;
-	}
-
-	vector<int> primes;
-	primes.push_back(2);
-	for(int i=3; i<limit; i += 2) if(!p[i/2]) primes.push_back(i);
-
-	return primes;
+  return primes;
 }
 
-auto primes = get_primes( N );
+VI primes = get_primes(PRIMES_LIMIT);
 
-
-
-
-
-
-
-// miller-rabin
-// p_max == 4,759,123,141 ( > 2^32)
-bool is_prime(const unsigned int p){
-	if((p&1) == 0) return false;
-	if(p < 2) return false;
-
-	unsigned int d = p-1;
-	int s = 0;
-	while((d&1)==0) {
-		++s;
-		d >>= 1;
-	}
-
-	array<unsigned int,3> tt = {2,7,61};
-
-	for(auto t : tt) {
-		if(p <= t) continue;
-
-		H1X a(p, t); // mod p
-		//int a = rand()%(p-2) + 2;
-		H1X x = bin_pow(a, d);
-		if(x==1 || x==p-1) continue;
-
-		int j;
-		for(j=0; j<s-1; ++j) {
-			x *= x; // mod p
-			if(x == 1) return false;
-			if(x == p-1) break;
-		}
-
-		if(j == s-1) return false;
-	}
-
-	return true;
+VI divisors(int x) {
+  VI r = {1};
+  while (x > 1) {
+    int p = lpd[x];
+    int cnt = 0;
+    while (lpd[x] == p) {
+      ++cnt;
+      x /= p;
+    }
+    int sz = SZ(r);
+    FOR(i, sz) {
+      int mult = 1;
+      FOR(jj, cnt) {
+        mult *= p;
+        { r.push_back(r[i] * mult); }
+      }
+    }
+  }
+  return r;
 }
-
-

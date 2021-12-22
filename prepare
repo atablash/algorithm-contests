@@ -1,0 +1,56 @@
+#!/usr/bin/env node
+
+const fs = require('fs').promises
+
+const exists = async f => {
+	try {
+		await fs.access(f)
+		return true
+	} catch {}
+	return false
+}
+
+const keypress = async () => {
+	process.stdin.setRawMode(true)
+	return new Promise(resolve =>
+		process.stdin.once('data', data => {
+			const c = [...data][0]
+			if (c < 32 && c !== 13) {
+				console.error('canceled')
+				process.exit(1)
+			}
+			process.stdin.setRawMode(false)
+			resolve(data.toString())
+		})
+	)
+}
+
+const main = async () => {
+	for (const x of ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']) {
+		const fr = 'templates/sol.cpp'
+		const to = x + '.cpp'
+
+		if (await exists(to)) {
+			process.stderr.write(
+				to + ' already EXISTS. [O]verwrite / [S]kip ? '
+			)
+
+			let r
+			for (;;) {
+				r = await keypress()
+				if (['o', 's'].includes(r)) break
+			}
+
+			console.error(r)
+
+			if (r === 's') continue
+		}
+
+		await fs.copyFile(fr, to)
+		console.log(fr, ' -> ', to)
+	}
+
+	process.exit(0)
+}
+
+main()

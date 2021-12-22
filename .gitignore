@@ -32,12 +32,36 @@
 *.app
 
 /a
+/b
+/c
+/d
+/e
+/f
+/g
+/h
+/i
+/j
 /a.out
 /a.cpp
+/b.cpp
+/c.cpp
+/d.cpp
+/e.cpp
+/f.cpp
+/g.cpp
+/h.cpp
+/i.cpp
+/j.cpp
 /temp
 /temp.cpp
 /template
+/gmon.out
+/anal.txt
+/in
+/in2
+/in3
 
+node_modules
 
 /amalgamate
 

@@ -1,38 +1,23 @@
 #pragma once
 
+#define LSB(S) (S & (-S)) // least significant bit
 
+// 1-indexed
+template <class T> struct FW {
+  vector<T> v;
 
+  FW(int n) : v(n + 1) {}
 
+  // range [1..x]
+  int sum(int x) {
+    int sum = 0;
+    for (; x; x -= LSB(x))
+      sum += v[x];
+    return sum;
+  }
 
-//
-// snippets/fenwick.hpp
-//
-#define LSOne(S) (S & (-S))
-
-class BIT {
-	int* ft, size;
-public:
-	// initialize a BIT of n elements to zero
-	BIT(int n) {
-		size = n;
-		ft = new int[n+1];
-	}
-
-	~BIT()	{
-		delete [] ft;
-	}
-
-	// returns sum of the range [1...b]
-	int sum(int b) {
-		int sum = 0;
-		for (; b; b -= LSOne(b)) sum += ft[b];
-		return sum;
-	}
-
-	// update value of the k-th element by v (v can be +ve/inc or -ve/dec)
-	// i.e., increment or decrement kth element by a value v
-	void update(int k) {
-		for (; k <= size; k += LSOne(k)) ++ft[k];
-	}
+  void update(int x, int change) {
+    for (; x <= SZ(v) - 1; x += LSB(x))
+      v[x] += change;
+  }
 };
-
