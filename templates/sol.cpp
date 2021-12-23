@@ -13,9 +13,12 @@ using namespace std;
 
 #define OVERLOAD(_0, _1, _2, _3, NAME, ...) NAME
 #define FOR(...)                                                               \
-  OVERLOAD(_0, ##__VA_ARGS__, FOR_3, FOR_2, FOR_1, FOR_0)(__VA_ARGS__)
+  OVERLOAD(_0 __VA_OPT__(, )##__VA_ARGS__, FOR_3, FOR_2, FOR_1, FOR_0)         \
+  (__VA_ARGS__)
+
 #define FORR(...)                                                              \
-  OVERLOAD(_0, ##__VA_ARGS__, FORR_3, FORR_2, FORR_1, FOR_0)(__VA_ARGS__)
+  OVERLOAD(_0 __VA_OPT__(, )##__VA_ARGS__, FORR_3, FORR_2, FORR_1, FOR_0)      \
+  (__VA_ARGS__)
 
 // min / max
 
@@ -44,8 +47,8 @@ template <class T, class... TS> auto max(T &&t, TS &&...ts) {
 
 // types
 #define umap unordered_map
+#define vec vector
 #define deq deque
-
 using ll = long long;
 using ld = long double;
 using pii = pair<int, int>;
@@ -57,6 +60,7 @@ using dpii = deque<pii>;
 // abbrevs
 #define push push_back
 #define pop pop_back
+#define CMP bool operator<(const auto &o) const
 
 // array operations
 #define SORT(v) sort(ALL(v));
@@ -87,6 +91,11 @@ template <class V> auto eremap(V &&vv) {
     if (r.emplace(e, nxt).second)
       ++nxt;
   return r;
+}
+
+template <class X, class FR, class TO>
+bool range(const X &x, const FR &fr, const TO &to) {
+  return !(x < fr) && x < to;
 }
 
 #ifdef LOCAL
@@ -130,7 +139,7 @@ template <class ARG, class... ARGS> void _E(ARG &&arg, ARGS &&...args) {
 
 #define E(...)                                                                 \
   {                                                                            \
-    cerr << indent;                                                            \
+    cerr << indent << "[" << __LINE__ << "] ";                                 \
     _E(__VA_ARGS__);                                                           \
   }
 
@@ -151,7 +160,6 @@ struct Indenter {
   {                                                                            \
     cerr << "ASSERT FAILED   " << str << "   " << __FILE__ << ':' << __LINE__  \
          << endl;                                                              \
-    print_trace();                                                             \
     abort();                                                                   \
   }
 
@@ -198,7 +206,7 @@ int msb(int x) {
 
 int msb(ll x) {
   CHECK_GT(x, 0)
-  return 31 - __builtin_clzll(x);
+  return 63 - __builtin_clzll(x);
 }
 
 int lsb(int x) {
@@ -220,7 +228,7 @@ int popcount(ll x) { return __builtin_popcountll(x); }
 #define FORS(s, mask)                                                          \
   for (auto s = mask; s; s = (s - 1) & mask) // iterate subsets
 
-auto round_up_pow2(int x) { return 1 << (msb(x - 1) + 1); }
+template <class T> int log2up(T x) { return x <= 1 ? 0 : msb(x - 1) + 1; }
 
 default_random_engine RNG(123);
 #define SHUFFLE(c) shuffle(ALL(c), RNG);
@@ -231,28 +239,38 @@ template <class T> T read() {
   cin >> x;
   return x;
 }
-#define RI read<int>()
-#define RLL read<LL>()
+#define II read<int>()
+#define ILL read<LL>()
 
-void _R() {}
-template <class ARG, class... ARGS> void _R(ARG &&arg, ARGS &&...args) {
+void _I() {}
+template <class ARG, class... ARGS> void _I(ARG &&arg, ARGS &&...args) {
   cin >> arg;
-  _R(forward<ARGS>(args)...);
+  _I(forward<ARGS>(args)...);
 }
-#define R(...) _R(__VA_ARGS__);
+#define I(...) _I(__VA_ARGS__);
 
 // stdout
-template <class T> void _print(T x) { cout << x << " "; }
+template <class T> void _print(T x) {
+  cout << x;
+  bool space = true;
+  if constexpr (is_same_v<T, char>) {
+    if (x == '\n')
+      space = false;
+  }
+  if (space)
+    cout << " ";
+}
 template <class T> void _print(deq<T> &d) {
   for (auto &e : d)
     cout << e << " ";
 }
-void _P() { cout << '\n'; }
-template <class ARG, class... ARGS> void _P(ARG &&arg, ARGS &&...args) {
+void _O() {}
+template <class ARG, class... ARGS> void _O(ARG &&arg, ARGS &&...args) {
   _print(arg);
-  _P(forward<ARGS>(args)...);
+  _O(forward<ARGS>(args)...);
 }
-#define P(...) _P(__VA_ARGS__);
+#define O(...) _O(__VA_ARGS__ __VA_OPT__(, ) '\n');
+#define OO(...) _O(__VA_ARGS__);
 
 // stderr
 template <class T> auto &operator<<(ostream &os, deq<T> &v) {
@@ -273,12 +291,53 @@ template <class A, class B> auto &operator<<(ostream &os, pair<A, B> &p) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
+//  _          _     _   _                                                    //
+// | |        | |   | | | |                                                   //
+// | |     ___| |_  | |_| |__   ___    __ _  __ _ _ __ ___   ___              //
+// | |    / _ \ __| | __| '_ \ / _ \  / _` |/ _` | '_ ` _ \ / _ \             //
+// | |___|  __/ |_  | |_| | | |  __/ | (_| | (_| | | | | | |  __/             //
+// \_____/\___|\__|  \__|_| |_|\___|  \__, |\__,_|_| |_| |_|\___|             //
+//                                     __/ |                                  //
+//                                    |___/                                   //
+//  ██████▓▓▒▒░░░░░░▒▒▒▒▒▒▒▒░░░░▒▒▒▒░░▒▒▒▒░░░░░░░░▒▒▒▒▒▒▒▒░░░░░░░░░░░░██████  //
+//  ██████░░░░░░░░░░░░░░░░░░░░░░░░▒▒▒▒░░░░░░░░░░▒▒░░▒▒░░░░░░░░░░░░  ░░▒▒████  //
+//  ████░░░░░░░░░░▒▒░░░░░░░░░░░░░░░░▒▒▒▒▒▒░░░░▒▒░░░░▒▒    ░░░░░░░░░░  ░░████  //
+//  ████░░░░░░▒▒▓▓████▓▓▓▓▓▓░░░░░░░░░░▒▒▒▒▒▒▒▒▒▒▒▒░░░░▒▒▓▓▓▓████▓▓▒▒░░  ▓▓██  //
+//  ████░░▒▒▓▓██████▓▓▓▓▓▓▓▓██▒▒░░░░░░░░▓▓▓▓░░░░░░░░██▓▓▓▓▒▒▒▒████▓▓▒▒░░████  //
+//  ████▓▓▒▒▒▒▓▓████▓▓▓▓██▓▓████░░░░░░░░▒▒▒▒░░░░░░████▓▓▓▓▓▓░░▓▓██▓▓░░░░████  //
+//  ████▒▒▒▒▓▓▓▓████▓▓▓▓▓▓▓▓████▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒████▓▓▓▓▓▓▒▒████▓▓░░░░▓▓██  //
+//  ████▒▒▒▒▒▒▓▓▓▓██████▓▓██████░░▒▒▒▒▒▒▒▒▒▒░░░░░░████▓▓▓▓▓▓████▓▓▒▒░░░░▓▓██  //
+//  ████▓▓▓▓▓▓▒▒▓▓▓▓▓▓██████▓▓▒▒▒▒▒▒▒▒░░▒▒░░░░░░░░▒▒████████▓▓▓▓▒▒░░▒▒▒▒░░██  //
+//  ██▓▓░░░░▒▒▓▓██▒▒▒▒▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒░░░░░░░░░░░░░░░░▒▒▓▓▓▓▒▒▒▒▒▒▓▓▓▓░░▒▒██  //
+//  ██░░▓▓▓▓▒▒▒▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒░░░░░░░░░░░░░░    ░░░░░░░░▒▒░░▒▒▓▓▒▒░░░░░░▓▓  //
+//  ██░░░░▒▒▓▓▓▓▒▒▓▓▓▓▒▒▒▒▒▒░░▒▒░░░░░░░░░░░░      ░░░░░░░░▒▒▒▒▓▓▒▒▒▒▓▓▓▓▒▒▒▒  //
+//  ▓▓▒▒▒▒▒▒░░▓▓▓▓▒▒▓▓▒▒▒▒▒▒░░░░░░░░░░░░░░░░      ░░░░░░░░▒▒▓▓▓▓▒▒▓▓░░        //
+//  ▓▓▒▒▒▒▓▓▒▒▒▒▓▓▒▒▓▓▓▓▒▒▒▒░░░░░░░░░░░░░░░░      ░░░░░░▒▒▒▒██▒▒▓▓▓▓░░▒▒▒▒▒▒  //
+//  ▓▓▒▒░░░░▓▓░░▓▓▓▓▒▒▓▓▒▒▒▒░░░░░░░░░░░░░░░░        ░░▒▒▒▒▓▓▓▓▒▒▓▓▒▒▒▒░░  ░░  //
+//  ██▒▒▒▒░░▒▒▓▓▒▒▓▓▒▒▓▓▒▒▒▒░░░░░░░░░░░░░░░░        ░░░░▒▒▓▓▓▓▒▒▓▓░░▓▓  ▒▒    //
+//  ██▒▒▒▒▒▒▒▒▓▓░░▓▓▒▒▓▓▒▒▒▒▒▒░░░░░░░░░░░░░░      ░░░░▒▒▒▒▒▒▓▓░░▓▓░░▓▓░░░░▓▓  //
+//  ██▓▓▓▓▓▓▓▓▒▒▒▒▓▓▒▒▓▓▒▒▒▒▒▒▒▒░░░░░░░░░░░░    ░░▒▒▒▒▒▒▒▒▒▒▓▓▒▒▓▓░░▒▒▒▒░░██  //
+//  ████▓▓▒▒▒▒▓▓▓▓▒▒▓▓▒▒▒▒▓▓▒▒▒▒░░░░░░░░░░░░      ░░▓▓▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▒▒████  //
+//  ██████████▓▓▒▒▒▒▒▒▒▒██▓▓▓▓▒▒░░░░░░░░░░░░      ░░░░░░▒▒▒▒░░▒▒▒▒▓▓████████  //
+//  ██████████████░░░░░░▒▒██▓▓▓▓██▓▓░░░░░░░░    ▓▓▒▒▒▒▓▓▓▓▒▒░░  ▒▒██████████  //
+//  ████████████████░░░░░░▓▓▓▓▓▓▓▓▓▓▓▓▒▒░░░░▒▒▓▓▓▓▓▓▓▓▒▒▒▒      ████████████  //
+//  ████████████████░░░░░░▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒░░      ░░████████████  //
+//  ████████████████░░░░░░▒▒░░▒▒▒▒░░▒▒▒▒▒▒▒▒▒▒░░░░░░▒▒        ██████████████  //
+//  ████████████████▒▒░░░░▒▒░░░░░░░░░░░░▒▒▒▒░░░░░░░░▒▒░░    ▒▒██████████████  //
+//  ██████████████████░░░░▒▒░░░░░░░░░░▒▒▒▒▒▒▒▒░░░░  ▓▓░░    ████████████████  //
+//  ██████████████████░░░░▒▒░░░░░░░░░░▒▒▒▒▒▒▒▒░░░░  ▓▓░░  ▓▓████████████████  //
+//                                                                            //
+//           ;;;;;              ██████╗ ███████╗ ██████╗ ██╗███╗   ██╗        //
+//           ;;;;;              ██╔══██╗██╔════╝██╔════╝ ██║████╗  ██║        //
+//           ;;;;;              ██████╔╝█████╗  ██║  ███╗██║██╔██╗ ██║        //
+//         ..;;;;;..            ██╔══██╗██╔══╝  ██║   ██║██║██║╚██╗██║        //
+//          ':::::'             ██████╔╝███████╗╚██████╔╝██║██║ ╚████║        //
+//            ':`               ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝        //
+//                                                                            //
 
 const bool MULTIPLE_TEST_CASES = false;
 
-struct TC {
+struct Test_Case {
   struct Pt {
     array<int, 2> x;
     int c;
@@ -286,19 +345,26 @@ struct TC {
   };
   deq<Pt> pts;
 
-  int n, k, q;
+  ll n, k, q;
   dll in;
 
-  TC() {
-    R(n)
+  Test_Case() {
+    I(n)
     // FOR(n) pts.push({{RI, RI}, RI});
-    FOR(n) in.push(RI);
+    FOR(n) in.push(ILL);
     //
   }
 
   int yes = -1;
 };
 
+//                                                                            //
+// ════════════ ('\../') ═════════════                                        //
+// ════════════ (◕.◕) ═══════════════                                        //
+// ════════════ (,,)(,,) ═════════════                                        //
+// .▀█▀.█▄█.█▀█.█▄.█.█▄▀　█▄█.█▀█.█─█.                                        //
+// ─.█.─█▀█.█▀█.█.▀█.█▀▄　─█.─█▄█.█▄█- for reading my code!                   //
+// ═══════════════════════════════════              --Adam                    //
 ////////////////////////////////////////////////////////////////////////////////
 
 int main() {
@@ -318,9 +384,9 @@ int main() {
     E()
     E("TEST CASE", i + 1)
     INDENT
-    TC tc;
+    Test_Case tc;
     if (tc.yes != -1)
-      P(tc.yes ? "YES" : "NO")
+      O(tc.yes ? "YES" : "NO")
   }
 
   return 0;
